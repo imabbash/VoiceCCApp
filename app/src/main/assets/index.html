@@ -6,44 +6,232 @@
     <title>Voice → CC (Android)</title>
     <style>
       :root { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
-      body { margin: 0; background: #0b0c0f; color: #e5e7eb; }
-      .wrap { max-width: 720px; margin: 0 auto; padding: 12px; }
-      h1 { font-size: 18px; margin: 8px 0 12px; font-weight: 700;}
-      .controls { display:flex; gap:8px; margin-bottom: 12px; flex-wrap: wrap; }
-      button { background:#111827; border:1px solid #374151; color:#e5e7eb; padding:10px 12px; border-radius: 12px; font-size:16px; cursor:pointer; }
-      button.primary { background:#2563eb; border-color:#1d4ed8; }
-      button[disabled] { opacity:0.5; cursor:not-allowed; }
-      .status { font-size: 13px; opacity:.8; margin: 6px 0 8px; min-height: 18px;}
-      .panes { display:grid; grid-template-columns: 1fr; gap:10px; }
-      .pane { background:#0f172a; border:1px solid #1f2937; border-radius: 14px; padding:12px; min-height: 120px;}
-      .pane h2 { font-size:14px; margin:0 0 8px; color:#93c5fd; }
-      .text { white-space: pre-wrap; line-height: 1.5; font-size:16px;}
-      .pill { display:inline-block; padding:4px 8px; font-size:12px; border-radius:999px; background:#1f2937; border:1px solid #374151; margin-left:8px;}
-      .badge { font-size: 12px; opacity: .8; }
-      .muted { opacity:.6 }
+      body {
+        margin: 0;
+        background: #0b0c0f;
+        color: #e5e7eb;
+        height: 100vh;
+        overflow: hidden;
+      }
+      .app-container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .header {
+        padding: 16px 20px 8px;
+        border-bottom: 1px solid #1f2937;
+        background: #0b0c0f;
+        z-index: 10;
+      }
+      h1 {
+        font-size: 20px;
+        margin: 0;
+        font-weight: 700;
+        text-align: center;
+      }
+      .status {
+        font-size: 14px;
+        opacity: .8;
+        margin: 8px 0 0;
+        min-height: 20px;
+        text-align: center;
+      }
+      .main-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        padding: 0 20px;
+      }
+      .you-section {
+        background: #0f172a;
+        border: 1px solid #1f2937;
+        border-radius: 16px;
+        padding: 16px;
+        margin: 16px 0 12px;
+        max-height: 120px;
+        overflow-y: auto;
+      }
+      .you-section h2 {
+        font-size: 14px;
+        margin: 0 0 12px;
+        color: #93c5fd;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .assistant-section {
+        flex: 1;
+        background: #111827;
+        border: 2px solid #374151;
+        border-radius: 20px;
+        padding: 24px;
+        overflow-y: auto;
+        margin-bottom: 16px;
+        position: relative;
+      }
+      .assistant-section h2 {
+        font-size: 16px;
+        margin: 0 0 20px;
+        color: #60a5fa;
+        text-align: center;
+        font-weight: 600;
+      }
+      .teleprompter-text {
+        white-space: pre-wrap;
+        line-height: 1.8;
+        font-size: 22px;
+        font-weight: 400;
+        letter-spacing: 0.5px;
+        color: #f3f4f6;
+        text-align: left;
+        padding: 0;
+        margin: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      }
+      .you-text {
+        white-space: pre-wrap;
+        line-height: 1.5;
+        font-size: 16px;
+        color: #e5e7eb;
+      }
+      .controls-container {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1f2937;
+        border: 1px solid #374151;
+        border-radius: 20px;
+        padding: 16px 24px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(8px);
+        z-index: 100;
+      }
+      button {
+        background: #374151;
+        border: 1px solid #4b5563;
+        color: #e5e7eb;
+        padding: 12px 18px;
+        border-radius: 14px;
+        font-size: 16px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        min-width: 100px;
+      }
+      button:hover:not([disabled]) {
+        background: #4b5563;
+        border-color: #6b7280;
+        transform: translateY(-1px);
+      }
+      button.primary {
+        background: #2563eb;
+        border-color: #1d4ed8;
+        color: #ffffff;
+      }
+      button.primary:hover:not([disabled]) {
+        background: #1d4ed8;
+        border-color: #1e40af;
+      }
+      button[disabled] {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+      .pill {
+        display: inline-block;
+        padding: 6px 12px;
+        font-size: 12px;
+        border-radius: 999px;
+        background: #374151;
+        border: 1px solid #4b5563;
+        color: #d1d5db;
+        font-weight: 500;
+      }
+      .badge {
+        font-size: 12px;
+        opacity: .8;
+      }
+      .muted {
+        opacity: .6;
+      }
+      .assistant-section::-webkit-scrollbar {
+        width: 8px;
+      }
+      .assistant-section::-webkit-scrollbar-track {
+        background: #1f2937;
+        border-radius: 10px;
+      }
+      .assistant-section::-webkit-scrollbar-thumb {
+        background: #4b5563;
+        border-radius: 10px;
+      }
+      .assistant-section::-webkit-scrollbar-thumb:hover {
+        background: #6b7280;
+      }
+      .you-section::-webkit-scrollbar {
+        width: 6px;
+      }
+      .you-section::-webkit-scrollbar-track {
+        background: #1f2937;
+        border-radius: 8px;
+      }
+      .you-section::-webkit-scrollbar-thumb {
+        background: #374151;
+        border-radius: 8px;
+      }
+      @media (max-width: 768px) {
+        .teleprompter-text {
+          font-size: 20px;
+          line-height: 1.7;
+        }
+        .controls-container {
+          bottom: 16px;
+          left: 16px;
+          right: 16px;
+          transform: none;
+          flex-wrap: wrap;
+          justify-content: center;
+        }
+        button {
+          min-width: 80px;
+          padding: 10px 14px;
+          font-size: 14px;
+        }
+      }
     </style>
   </head>
   <body>
-    <div class="wrap">
-      <h1>Realtime Voice → <span class="badge">Captions (no voice out)</span></h1>
-      <div class="controls">
-        <button id="start" class="primary">Start session</button>
-        <button id="mic" disabled>🎙️ Mic: <span id="micState">Off</span></button>
+    <div class="app-container">
+      <div class="header">
+        <h1>Realtime Voice → <span class="badge">Captions (no voice out)</span></h1>
+        <div class="status" id="status">Ready.</div>
+      </div>
+
+      <div class="main-content">
+        <div class="you-section">
+          <h2>You <span class="pill" id="vad">idle</span></h2>
+          <div class="you-text" id="you"></div>
+        </div>
+
+        <div class="assistant-section">
+          <h2>✨ AI Assistant Response</h2>
+          <div class="teleprompter-text" id="assistant"></div>
+        </div>
+      </div>
+
+      <div class="controls-container">
+        <button id="start" class="primary">Start Session</button>
+        <button id="mic" disabled>🎙️ <span id="micState">Off</span></button>
         <button id="clear" disabled>Clear</button>
       </div>
-      <div class="status" id="status">Ready.</div>
-
-      <div class="panes">
-        <div class="pane">
-          <h2>You <span class="pill" id="vad">idle</span></h2>
-          <div class="text" id="you"></div>
-        </div>
-        <div class="pane">
-          <h2>Assistant</h2>
-          <div class="text" id="assistant"></div>
-        </div>
-      </div>
-      <div class="badge">Tip: Keep session open; just toggle Mic to speak again.</div>
     </div>
 
     <script>
@@ -151,9 +339,13 @@
           }
           if (event.type === "response.text.delta" || event.type === "response.output_text.delta") {
             asstEl.textContent += event.delta || event.text || "";
+            // Auto-scroll to bottom for teleprompter experience
+            asstEl.parentElement.scrollTop = asstEl.parentElement.scrollHeight;
           }
           if (event.type === "response.text.done" || event.type === "response.done") {
             asstEl.textContent += "\n";
+            // Ensure final scroll to bottom
+            asstEl.parentElement.scrollTop = asstEl.parentElement.scrollHeight;
           }
           if (event.type === "error") {
             statusEl.textContent = "Realtime error: " + (event.error?.message || "unknown");
@@ -180,7 +372,11 @@
       document.getElementById("clear").addEventListener("click", () => {
         youEl.textContent = "";
         asstEl.textContent = "";
+        // Reset scroll positions
+        asstEl.parentElement.scrollTop = 0;
+        youEl.parentElement.scrollTop = 0;
       });
     </script>
   </body>
 </html>
+
